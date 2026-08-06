@@ -44,7 +44,6 @@ from generate_video import generate_clips
 from stitch_video import stitch
 from upload_youtube import upload_video
 from upload_telegram import upload_telegram
-from upload_pinterest import upload_pin
 
 # ---------------------------------------------------------------------------
 # Logging setup
@@ -106,7 +105,6 @@ def run_pipeline(
     video_url: str | None = None,
     skip_youtube: bool = False,
     skip_telegram: bool = False,
-    skip_pinterest: bool = False,
 ) -> dict:
     """
     Run the full generate → stitch → upload pipeline.
@@ -137,7 +135,6 @@ def run_pipeline(
         "telegram_path": None,
         "youtube_video_id": None,
         "telegram_message_id": None,
-        "pinterest_pin_id": None,
         "errors": [],
     }
 
@@ -236,31 +233,7 @@ def run_pipeline(
                 "Telegram upload failed. YouTube result (if any) is unaffected."
             )
 
-    # ════════════════════════════════════════════════════════════════════════
-    # Stage 5: Upload to Pinterest
-    # ════════════════════════════════════════════════════════════════════════
-    if skip_pinterest:
-        logger.info("Stage 5 (Pinterest) — SKIPPED via --skip-pinterest flag.")
-    else:
-        logger.info("═══════════════════════════════════")
-        logger.info("STAGE 5 — UPLOAD TO PINTEREST")
-        logger.info("═══════════════════════════════════")
 
-        try:
-            pin_id = upload_pin(
-                file_path=ig_path,  # Use the 9:16 vertical cut for Pinterest
-                title=title,
-                description=description or caption,
-            )
-            results["pinterest_pin_id"] = pin_id
-            logger.info("Stage 5 complete. Pinterest Pin ID: %s", pin_id)
-        except Exception as exc:
-            msg = f"Stage 5 FAILED (Pinterest upload): {exc}"
-            logger.error(msg, exc_info=True)
-            results["errors"].append(msg)
-            logger.warning("Pinterest upload failed.")
-
-    # ════════════════════════════════════════════════════════════════════════
     # Summary
     # ════════════════════════════════════════════════════════════════════════
     logger.info("═══════════════════════════════════")
@@ -268,7 +241,6 @@ def run_pipeline(
     logger.info("  Clips generated   : %d", len(results["clips"]))
     logger.info("  YouTube video ID  : %s", results["youtube_video_id"] or "N/A")
     logger.info("  Telegram msg ID   : %s", results["telegram_message_id"] or "N/A")
-    logger.info("  Pinterest Pin ID  : %s", results["pinterest_pin_id"] or "N/A")
     if results["errors"]:
         logger.warning("  Errors (%d):", len(results["errors"]))
         for e in results["errors"]:
@@ -328,7 +300,7 @@ Examples:
     parser.add_argument(
         "--caption",
         default=None,
-        help='Telegram caption (also used as Pinterest description).',
+        help='Telegram caption.',
     )
     parser.add_argument(
         "--clips",
@@ -365,11 +337,6 @@ Examples:
         action="store_true",
         help="Skip the Telegram upload stage.",
     )
-    parser.add_argument(
-        "--skip-pinterest",
-        action="store_true",
-        help="Skip the Pinterest upload stage.",
-    )
 
     return parser.parse_args()
 
@@ -397,7 +364,6 @@ if __name__ == "__main__":
         privacy=args.privacy,
         skip_youtube=args.skip_youtube,
         skip_telegram=args.skip_telegram,
-        skip_pinterest=args.skip_pinterest,
     )
 
     # Exit with non-zero code if any stage had errors (useful for CI/scripts)

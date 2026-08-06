@@ -67,9 +67,8 @@ jobs:
 
       # ── 8. Run the full pipeline ──────────────────────────────────────────
       - name: Run ASMR pipeline
-        run: python orchestrator.py --skip-pinterest
+        run: python orchestrator.py
         # No --prompt/--title/--caption → script auto-picks a random one
-        # --skip-pinterest: Pinterest API requires special app approval for video uploads
 
       # ── 9. Upload output files as artifacts (for debugging) ──────────────
       - name: Upload pipeline logs
