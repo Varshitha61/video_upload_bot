@@ -1,0 +1,80 @@
+name: Daily ASMR Video Upload
+
+on:
+  schedule:
+    # Runs at 9:00 AM IST (3:30 AM UTC) every day
+    - cron: '30 3 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # ── 1. Checkout the repo ──────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Python ──────────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # ── 3. Install Python dependencies ───────────────────────────────────
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # ── 4. Install FFmpeg ─────────────────────────────────────────────────
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version
+
+      # ── 5. Write the .env file from GitHub Secrets ────────────────────────
+      - name: Create .env from secrets
+        run: |
+          cat > .env << EOF
+          FFMPEG_BIN=ffmpeg
+          FFPROBE_BIN=ffprobe
+          GENERATION_MODE=pexels
+          PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}
+          HF_TOKEN=${{ secrets.HF_TOKEN }}
+          HF_MODEL=cerspense/zeroscope_v2_576w
+          YOUTUBE_CLIENT_SECRET_PATH=client_secret.json
+          YOUTUBE_TOKEN_PATH=youtube_token.json
+          YOUTUBE_CATEGORY_ID=22
+          YOUTUBE_PRIVACY_STATUS=public
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
+          PINTEREST_ACCESS_TOKEN=${{ secrets.PINTEREST_ACCESS_TOKEN }}
+          PINTEREST_BOARD_ID=${{ secrets.PINTEREST_BOARD_ID }}
+          AI_CONTENT_DISCLOSURE=true
+          OUTPUT_DIR=output
+          CLIPS_DIR=output/clips
+          EOF
+
+      # ── 6. Write the YouTube client secret from GitHub Secrets ───────────
+      - name: Create YouTube client_secret.json
+        run: echo '${{ secrets.YOUTUBE_CLIENT_SECRET }}' > client_secret.json
+
+      # ── 7. Restore YouTube OAuth token (so no browser login is needed) ───
+      - name: Restore YouTube OAuth token
+        run: echo '${{ secrets.YOUTUBE_TOKEN }}' > youtube_token.json
+
+      # ── 8. Run the full pipeline ──────────────────────────────────────────
+      - name: Run ASMR pipeline
+        run: python orchestrator.py
+        # No --prompt/--title/--caption → script auto-picks a random one
+
+      # ── 9. Upload output files as artifacts (for debugging) ──────────────
+      - name: Upload pipeline logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-logs-${{ github.run_number }}
+          path: output/pipeline.log
+          retention-days: 7
