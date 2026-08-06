@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Core dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Pexels stock video fetching (uses standard requests library)
+requests==2.32.3
+
+# YouTube Data API v3 + Google Auth
+google-api-python-client==2.136.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+google-auth==2.30.0
+
+# Environment variable loading from .env
+python-dotenv==1.0.1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional: HuggingFace local text-to-video (requires NVIDIA GPU + ~8GB VRAM)
+# Only install if you have a GPU and want GENERATION_MODE=huggingface
+# ─────────────────────────────────────────────────────────────────────────────
+# Uncomment to install:
+# torch==2.3.1          # https://pytorch.org/get-started/locally/ (choose CUDA version)
+# diffusers==0.29.2
+# accelerate==0.31.0
+# transformers==4.42.3
