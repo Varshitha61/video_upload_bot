@@ -30,6 +30,7 @@ import argparse
 import logging
 import sys
 import io
+import random
 from pathlib import Path
 
 # Fix Windows terminal Unicode encoding issues
@@ -57,6 +58,37 @@ logging.basicConfig(
     ],
 )
 logger = logging.getLogger("orchestrator")
+
+# ---------------------------------------------------------------------------
+# Daily Automated Prompts
+# ---------------------------------------------------------------------------
+RANDOM_PROMPTS = [
+    {
+        "prompt": "ASMR kinetic sand slicing, soft pastel colors, close up macro shot, highly satisfying",
+        "title": "Satisfying Kinetic Sand ASMR 🔪",
+        "caption": "Relaxing kinetic sand slicing ✨ #asmr #satisfying #relax"
+    },
+    {
+        "prompt": "ASMR wooden blocks falling and tapping, soft warm lighting, 4K",
+        "title": "Relaxing Wooden ASMR 🪵",
+        "caption": "Wood tapping and falling sounds ✨ #asmr #sleep #wood"
+    },
+    {
+        "prompt": "ASMR rain drops hitting a glass window, cozy indoor lighting, highly detailed",
+        "title": "Cozy Rain ASMR 🌧️",
+        "caption": "Rain sounds for deep sleep ✨ #asmr #rain #sleep"
+    },
+    {
+        "prompt": "ASMR soft whispering with a fuzzy microphone, dim studio lighting, relaxing",
+        "title": "Deep Sleep Whispering ASMR 🎙️",
+        "caption": "Soft whispers to help you sleep ✨ #asmr #whisper #relax"
+    },
+    {
+        "prompt": "ASMR soap cutting into small cubes, bright natural lighting, satisfying macro",
+        "title": "Satisfying Soap Cutting ASMR 🧼",
+        "caption": "Crisp soap cutting sounds ✨ #asmr #soapcutting #satisfying"
+    }
+]
 
 
 # ---------------------------------------------------------------------------
@@ -282,7 +314,7 @@ Examples:
 
     parser.add_argument(
         "--prompt",
-        required=True,
+        default=None,
         help=(
             'Veo 3 text prompt for the ASMR video. '
             'Example: "ASMR wooden box tapping, soft candlelight, 4K"'
@@ -290,12 +322,12 @@ Examples:
     )
     parser.add_argument(
         "--title",
-        required=True,
+        default=None,
         help="YouTube video title (max 100 characters).",
     )
     parser.add_argument(
         "--caption",
-        required=True,
+        default=None,
         help='Telegram caption (also used as Pinterest description).',
     )
     parser.add_argument(
@@ -344,6 +376,14 @@ Examples:
 
 if __name__ == "__main__":
     args = _parse_args()
+
+    # Pick a random predefined prompt if not fully provided
+    if not args.prompt or not args.title or not args.caption:
+        selected = random.choice(RANDOM_PROMPTS)
+        args.prompt = args.prompt or selected["prompt"]
+        args.title = args.title or selected["title"]
+        args.caption = args.caption or selected["caption"]
+        logger.info(f"Using random prompt: {args.title}")
 
     tag_list = [t.strip() for t in args.tags.split(",") if t.strip()]
 
