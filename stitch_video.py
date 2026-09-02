@@ -178,6 +178,10 @@ def export_youtube(raw_path: Path, output_path: Path) -> Path:
     _run_ffmpeg(
         [
             "-i", str(raw_path),
+            "-f", "lavfi",
+            "-i", "anoisesrc=a=0.1:c=brown",  # generates soothing brown noise (rain/water sound)
+            "-map", "0:v",               # Take video from input 0 (raw_combined.mp4)
+            "-map", "1:a",               # Take audio from input 1 (lavfi noise)
             "-vf", (
                 "scale=1920:1080:force_original_aspect_ratio=decrease,"
                 "pad=1920:1080:(ow-iw)/2:(oh-ih)/2"
@@ -187,6 +191,7 @@ def export_youtube(raw_path: Path, output_path: Path) -> Path:
             "-preset", "medium",
             "-c:a", "aac",
             "-b:a", "192k",
+            "-shortest",                 # Stop encoding when the video stream ends
             "-movflags", "+faststart",   # enables streaming while downloading
             str(output_path),
         ],
@@ -231,6 +236,10 @@ def export_instagram(raw_path: Path, output_path: Path) -> Path:
     _run_ffmpeg(
         [
             "-i", str(raw_path),
+            "-f", "lavfi",
+            "-i", "anoisesrc=a=0.1:c=brown",  # generates soothing brown noise
+            "-map", "0:v",
+            "-map", "1:a",
         ]
         + trim_args
         + [
@@ -243,6 +252,7 @@ def export_instagram(raw_path: Path, output_path: Path) -> Path:
             "-preset", "medium",
             "-c:a", "aac",
             "-b:a", "192k",
+            "-shortest",                 # Stop encoding when the video stream ends
             "-movflags", "+faststart",
             str(output_path),
         ],

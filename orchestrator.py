@@ -63,30 +63,80 @@ logger = logging.getLogger("orchestrator")
 # ---------------------------------------------------------------------------
 RANDOM_PROMPTS = [
     {
-        "prompt": "ASMR kinetic sand slicing, soft pastel colors, close up macro shot, highly satisfying",
+        "prompt": "ASMR kinetic sand slicing soft pastel colors close up macro satisfying",
         "title": "Satisfying Kinetic Sand ASMR 🔪",
-        "caption": "Relaxing kinetic sand slicing ✨ #asmr #satisfying #relax"
+        "caption": "Relaxing kinetic sand slicing ✨ #asmr #satisfying #relax #kinetic"
     },
     {
-        "prompt": "ASMR wooden blocks falling and tapping, soft warm lighting, 4K",
-        "title": "Relaxing Wooden ASMR 🪵",
-        "caption": "Wood tapping and falling sounds ✨ #asmr #sleep #wood"
+        "prompt": "ASMR wooden blocks tapping soft warm candlelight 4K relaxing",
+        "title": "Relaxing Wooden Block ASMR 🪵",
+        "caption": "Wood tapping sounds for deep sleep ✨ #asmr #sleep #wood #relax"
     },
     {
-        "prompt": "ASMR rain drops hitting a glass window, cozy indoor lighting, highly detailed",
+        "prompt": "ASMR rain drops hitting glass window cozy indoor lighting",
         "title": "Cozy Rain ASMR 🌧️",
-        "caption": "Rain sounds for deep sleep ✨ #asmr #rain #sleep"
+        "caption": "Rain sounds for deep sleep ✨ #asmr #rain #sleep #cozy"
     },
     {
-        "prompt": "ASMR soft whispering with a fuzzy microphone, dim studio lighting, relaxing",
+        "prompt": "ASMR soft whispering fuzzy microphone dim studio lighting relaxing",
         "title": "Deep Sleep Whispering ASMR 🎙️",
-        "caption": "Soft whispers to help you sleep ✨ #asmr #whisper #relax"
+        "caption": "Soft whispers to help you sleep ✨ #asmr #whisper #relax #sleep"
     },
     {
-        "prompt": "ASMR soap cutting into small cubes, bright natural lighting, satisfying macro",
+        "prompt": "ASMR soap cutting small cubes bright natural lighting macro",
         "title": "Satisfying Soap Cutting ASMR 🧼",
-        "caption": "Crisp soap cutting sounds ✨ #asmr #soapcutting #satisfying"
-    }
+        "caption": "Crisp soap cutting sounds ✨ #asmr #soapcutting #satisfying #relax"
+    },
+    {
+        "prompt": "ASMR crunchy slime stretching and popping bright colors satisfying",
+        "title": "Crunchy Slime ASMR 🫧",
+        "caption": "Satisfying slime sounds ✨ #asmr #slime #satisfying #relax"
+    },
+    {
+        "prompt": "ASMR crackling fireplace cozy warm glow slow motion",
+        "title": "Cozy Fireplace ASMR 🔥",
+        "caption": "Crackling fire for relaxation ✨ #asmr #fireplace #cozy #sleep"
+    },
+    {
+        "prompt": "ASMR water flowing stream nature sounds peaceful close up",
+        "title": "Peaceful Water Stream ASMR 💧",
+        "caption": "Calming water sounds ✨ #asmr #water #nature #sleep #relax"
+    },
+    {
+        "prompt": "ASMR page turning book reading quiet library warm lighting",
+        "title": "Relaxing Book Pages ASMR 📖",
+        "caption": "Soft page turning sounds ✨ #asmr #reading #books #relax"
+    },
+    {
+        "prompt": "ASMR tapping glass bottles crystal sounds close up macro",
+        "title": "Glass Tapping ASMR 🔮",
+        "caption": "Crystal glass tapping sounds ✨ #asmr #glass #tapping #satisfying"
+    },
+    {
+        "prompt": "ASMR sand pouring and flowing through hands desert texture",
+        "title": "Flowing Sand ASMR 🏜️",
+        "caption": "Relaxing sand pouring sounds ✨ #asmr #sand #satisfying #relax"
+    },
+    {
+        "prompt": "ASMR crunchy autumn leaves walking nature sounds relaxing",
+        "title": "Crunchy Autumn Leaves ASMR 🍂",
+        "caption": "Satisfying autumn leaf sounds ✨ #asmr #autumn #leaves #nature"
+    },
+    {
+        "prompt": "ASMR ocean waves gentle beach sounds relaxing sunset",
+        "title": "Ocean Waves ASMR 🌊",
+        "caption": "Gentle ocean waves for sleep ✨ #asmr #ocean #waves #sleep #relax"
+    },
+    {
+        "prompt": "ASMR keyboard typing mechanical switches satisfying close up",
+        "title": "Mechanical Keyboard ASMR ⌨️",
+        "caption": "Satisfying keyboard typing sounds ✨ #asmr #keyboard #typing #satisfying"
+    },
+    {
+        "prompt": "ASMR whisking and mixing cooking sounds kitchen bowl",
+        "title": "Cooking ASMR Sounds 🥣",
+        "caption": "Relaxing cooking sounds ✨ #asmr #cooking #kitchen #satisfying"
+    },
 ]
 
 

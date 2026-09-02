@@ -22,6 +22,7 @@ Usage (standalone):
 
 import argparse
 import logging
+import random
 import re
 from pathlib import Path
 
@@ -118,6 +119,9 @@ def fetch_from_pexels(
     """
     Search Pexels for videos matching *prompt* and download *count* of them.
 
+    Each call picks a random page of results so you get different videos on
+    every run, even for the same prompt.
+
     Pexels rate limits:
       - 200 requests / hour
       - 20,000 requests / month
@@ -128,12 +132,16 @@ def fetch_from_pexels(
     _check_pexels_key()
 
     query = _prompt_to_pexels_query(prompt)
-    logger.info("Pexels search: query=%r, count=%d", query, count)
+
+    # Randomise the page so each run fetches a different set of videos
+    random_page = random.randint(1, 5)
+    logger.info("Pexels search: query=%r, count=%d, page=%d", query, count, random_page)
 
     headers = {"Authorization": cfg.PEXELS_API_KEY}
     params = {
         "query": query,
         "per_page": min(_PEXELS_PER_PAGE, 80),   # Pexels max per_page = 80
+        "page": random_page,
         "orientation": "landscape",               # 16:9 for horizontal source
         "size": "medium",                         # small | medium | large
     }
@@ -146,10 +154,22 @@ def fetch_from_pexels(
             "  → Regenerate your key at: https://www.pexels.com/api/\n"
             "  → Update PEXELS_API_KEY in your .env"
         )
-    resp.raise_for_status()
 
-    data = resp.json()
-    videos = data.get("videos", [])
+    # If the random page is empty (beyond total pages), fall back to page 1
+    if resp.status_code == 200:
+        data = resp.json()
+        videos = data.get("videos", [])
+        if not videos and random_page > 1:
+            logger.info("Page %d returned no results — falling back to page 1.", random_page)
+            params["page"] = 1
+            resp = requests.get(PEXELS_VIDEO_SEARCH_URL, headers=headers, params=params, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+            videos = data.get("videos", [])
+    else:
+        resp.raise_for_status()
+        data = resp.json()
+        videos = data.get("videos", [])
 
     if not videos:
         raise RuntimeError(
@@ -157,6 +177,8 @@ def fetch_from_pexels(
             "  Try a simpler prompt (e.g. 'rain', 'sand', 'wood texture')."
         )
 
+    # Shuffle so repeated runs with the same page also vary clip order
+    random.shuffle(videos)
     logger.info("Pexels found %d video(s). Downloading %d…", len(videos), count)
 
     paths: list[Path] = []
@@ -167,7 +189,9 @@ def fetch_from_pexels(
             continue
 
         video_url = vf["link"]
-        dest = output_dir / f"clip_{i:03d}.mp4"
+        # Use the Pexels video ID in the filename to avoid overwriting previous clips
+        pexels_id = video.get("id", i)
+        dest = output_dir / f"clip_{pexels_id}.mp4"
 
         try:
             path = _download_file(video_url, dest)

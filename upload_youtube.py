@@ -69,39 +69,73 @@ def _load_or_create_credentials() -> Credentials:
     Load cached OAuth2 credentials or run the browser-based auth flow.
 
     Token is persisted to YOUTUBE_TOKEN_PATH so future runs skip the browser.
+    Handles token refresh automatically; falls back to browser flow only if
+    the refresh_token is missing or the refresh itself fails.
     """
     token_path = Path(cfg.YOUTUBE_TOKEN_PATH)
     creds: Credentials | None = None
 
     if token_path.exists():
         logger.info("Loading cached YouTube token from %s", token_path)
-        creds = Credentials.from_authorized_user_file(str(token_path), _SCOPES)
-
-    # Refresh if expired, or run full flow if no token
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            logger.info("Refreshing expired YouTube token…")
-            creds.refresh(Request())
-        else:
-            secret_path = Path(cfg.YOUTUBE_CLIENT_SECRET_PATH)
-            if not secret_path.exists():
-                raise FileNotFoundError(
-                    f"YouTube OAuth2 client secret not found at: {secret_path}\n"
-                    "  → Download it from Google Cloud Console:\n"
-                    "    https://console.cloud.google.com/apis/credentials\n"
-                    "  → Set YOUTUBE_CLIENT_SECRET_PATH in your .env file."
-                )
+        try:
+            creds = Credentials.from_authorized_user_file(str(token_path), _SCOPES)
             logger.info(
-                "Running YouTube OAuth2 browser flow. A browser window will open…"
+                "Token loaded. valid=%s expired=%s has_refresh_token=%s",
+                creds.valid,
+                creds.expired,
+                bool(creds.refresh_token),
             )
-            flow = InstalledAppFlow.from_client_secrets_file(
-                str(secret_path), _SCOPES
-            )
-            creds = flow.run_local_server(port=0)
+        except Exception as exc:
+            logger.warning("Failed to load token file (%s) — will re-authenticate.", exc)
+            creds = None
 
-        # Persist the token
+    # ── Try to refresh if expired ─────────────────────────────────────────────
+    if creds and not creds.valid:
+        if creds.expired and creds.refresh_token:
+            logger.info("Token is expired — attempting automatic refresh…")
+            try:
+                creds.refresh(Request())
+                logger.info("Token refreshed successfully.")
+                # Persist the refreshed token immediately
+                token_path.write_text(creds.to_json(), encoding="utf-8")
+                logger.info("Refreshed token saved to %s", token_path)
+                return creds
+            except Exception as exc:
+                logger.warning(
+                    "Token refresh failed (%s) — will run browser OAuth flow.", exc
+                )
+                creds = None  # force browser re-auth
+        else:
+            logger.warning(
+                "Token is invalid and cannot be refreshed "
+                "(expired=%s, has_refresh_token=%s). Running browser auth flow.",
+                creds.expired,
+                bool(creds.refresh_token),
+            )
+            creds = None
+
+    # ── Full browser OAuth flow (first run or after refresh failure) ──────────
+    if not creds or not creds.valid:
+        secret_path = Path(cfg.YOUTUBE_CLIENT_SECRET_PATH)
+        if not secret_path.exists():
+            raise FileNotFoundError(
+                f"YouTube OAuth2 client secret not found at: {secret_path}\n"
+                "  → Download it from Google Cloud Console:\n"
+                "    https://console.cloud.google.com/apis/credentials\n"
+                "  → Set YOUTUBE_CLIENT_SECRET_PATH in your .env file."
+            )
+        logger.info(
+            "Running YouTube OAuth2 browser flow. "
+            "A browser window will open — please authorise the app and return here."
+        )
+        flow = InstalledAppFlow.from_client_secrets_file(
+            str(secret_path), _SCOPES
+        )
+        creds = flow.run_local_server(port=0)
+
+        # Persist the new token
         token_path.write_text(creds.to_json(), encoding="utf-8")
-        logger.info("Token saved to %s", token_path)
+        logger.info("New token saved to %s", token_path)
 
     return creds
 
